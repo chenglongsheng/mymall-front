@@ -5,6 +5,7 @@
     :props="defaultProps"
     show-checkbox
     :expand-on-click-node="false"
+    :default-expanded-keys="expandedIds"
   >
     <span class="custom-tree-node" slot-scope="{ node, data }">
       <span>{{ node.label }}</span>
@@ -35,6 +36,7 @@ export default {
   data() {
     return {
       menus: [],
+      expandedIds: [],
       defaultProps: {
         children: 'children',
         label: 'name'
@@ -59,6 +61,36 @@ export default {
       console.log('append', data)
     },
     remove(node, data) {
+      var ids = [data.catId]
+      this.$confirm(
+        `此操作将删除【${node.data.name}】菜单, 是否继续?`,
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+        .then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/product/category/delete'),
+            method: 'post',
+            data: this.$http.adornData(ids, false)
+          }).then(({ data }) => {
+            this.getCategory()
+            this.expandedIds = [node.data.parentCid]
+          }),
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            })
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
       console.log('remove', node, data)
     }
   }
@@ -66,12 +98,4 @@ export default {
 </script>
 
 <style>
-.custom-tree-node {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 14px;
-  padding-right: 8px;
-}
 </style>
