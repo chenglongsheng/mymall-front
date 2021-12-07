@@ -2,11 +2,13 @@
   <div>
     <el-tree
       node-key="catId"
+      show-checkbox
       :data="menus"
       :props="defaultProps"
-      show-checkbox
       :expand-on-click-node="false"
       :default-expanded-keys="expandedIds"
+      draggable
+      :allow-drop="allowDrop"
     >
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
@@ -16,23 +18,17 @@
             type="text"
             size="mini"
             @click="() => append(data)"
-          >
-            Append
-          </el-button>
-          <el-button type="text" size="mini" @click="() => modify(data)">
-            Modify
-          </el-button>
+          >Append</el-button>
+          <el-button type="text" size="mini" @click="() => modify(data)">Modify</el-button>
           <el-button
             v-if="node.isLeaf"
             type="text"
             size="mini"
             @click="() => remove(node, data)"
-          >
-            Delete
-          </el-button>
+          >Delete</el-button>
         </span>
-      </span></el-tree
-    >
+      </span>
+    </el-tree>
     <el-dialog
       :title="title"
       :visible.sync="dialogVisible"
@@ -49,10 +45,7 @@
           <el-input v-model="category.icon" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="计量单位">
-          <el-input
-            v-model="category.productUnit"
-            autocomplete="off"
-          ></el-input>
+          <el-input v-model="category.productUnit" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -67,6 +60,8 @@
 export default {
   data() {
     return {
+      maxLevel: 1,
+      baseLevel: 0,
       closeOnClickModal: false,
       title: '',
       category: {
@@ -93,6 +88,29 @@ export default {
     this.getCategory()
   },
   methods: {
+    allowDrop(draggingNode, dropNode, type) {
+      console.log('allowDrop:', draggingNode, dropNode, type)
+
+      // 记录基准节点
+      this.baseLevel = draggingNode.level
+      var level = this.countLevel(draggingNode)
+      console.log('最大深度', level)
+    },
+    //计算当前节点的最大深度
+    countLevel(node) {
+      var maxLevel = 1
+      if (node.childNodes.length > 0) {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          if (node.childNodes[i].level > this.baseLevel) {
+            this.maxLevel = node.childNodes[i].level - this.baseLevel + 1
+          }
+          this.countLevel(node.childNodes[i])
+        }
+        return this.maxLevel
+      } else {
+        return maxLevel
+      }
+    },
     getCategory() {
       this.$http({
         url: this.$http.adornUrl('/product/category/list/tree'),
@@ -150,10 +168,10 @@ export default {
       })
     },
     sumbmitData() {
-      if (this.title == '添加分类') {
+      if (this.title === '添加分类') {
         this.addMenus()
       }
-      if (this.title == '修改分类') {
+      if (this.title === '修改分类') {
         this.modifyMenus()
       }
     },
