@@ -9,6 +9,7 @@
       :default-expanded-keys="expandedIds"
       draggable
       :allow-drop="allowDrop"
+      @node-drop="handleDrop"
     >
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
@@ -60,6 +61,7 @@
 export default {
   data() {
     return {
+      updateNodes: [],
       maxLevel: 1,
       baseLevel: 0,
       closeOnClickModal: false,
@@ -88,13 +90,73 @@ export default {
     this.getCategory()
   },
   methods: {
-    allowDrop(draggingNode, dropNode, type) {
-      console.log('allowDrop:', draggingNode, dropNode, type)
+    handleDrop(draggingNode, dropNode, dropType, ev) {
+      // 移动成功后交换数据
+      console.log('handleDrop: ', draggingNode, dropNode, dropType)
 
+      // 改变三个属性，parent_cid， cat_level， sort
+      // parent_cid
+      let Cid = 0
+      let siblings = null
+      if (dropType === 'before' || dropType === 'after') {
+        Cid = dropNode.data.parentCid
+        siblings = dropNode.parent.childNodes
+      } else {
+        Cid = dropNode.data.catId
+        siblings = dropNode.childNodes
+      }
+
+      // sort
+      for (let i in siblings) {
+        this.updateNodes.push({
+          catId: siblings[i].data.catId,
+          parentCid: Cid,
+          sort: i,
+          catLevel: siblings[i].level
+        })
+        if (siblings[i].data.catLevel != siblings[i].level) {
+          this.updateChildNodesLevel(siblings[i])
+        }
+      }
+
+      this.$http({
+        url: this.$http.adornUrl('/product/category/update/sort'),
+        method: 'post',
+        data: this.$http.adornData(this.updateNodes, false)
+      }).then(() => {
+        this.getCategory()
+        this.expandedIds = [Cid]
+        this.$message({
+          type: 'success',
+          message: `移动成功!`
+        })
+      })
+      // console.log('updateNodes:', this.updateNodes)
+      this.updateNodes = []
+    },
+    updateChildNodesLevel(node) {
+      if (node.childNodes.length > 0) {
+        for (let i in node.childNodes) {
+          this.updateNodes.push({
+            catId: node.childNodes[i].data.catId,
+            catLevel: node.childNodes[i].level
+          })
+          this.updateChildNodesLevel(node.childNodes[i])
+        }
+      }
+    },
+    // 判断节点是否拖拽
+    allowDrop(draggingNode, dropNode, type) {
+      // console.log('allowDrop:', draggingNode, dropNode, type)
       // 记录基准节点
       this.baseLevel = draggingNode.level
-      var level = this.countLevel(draggingNode)
-      console.log('最大深度', level)
+      var deep = this.countLevel(draggingNode)
+      // console.log('深度：', deep)
+      if (type === 'inner') {
+        return deep + dropNode.level <= 3
+      } else {
+        return deep + dropNode.parent.level <= 3
+      }
     },
     //计算当前节点的最大深度
     countLevel(node) {
