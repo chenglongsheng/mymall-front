@@ -1,5 +1,15 @@
 <template>
   <div>
+    <el-switch v-model="allowDraggable" active-text="开启拖拽" inactive-text="关闭拖拽"></el-switch>
+    <el-button
+      @click="batchUpdate"
+      v-if="allowDraggable"
+      size="mini"
+      round
+      type="primary"
+      style="padding-left: 15px;"
+    >批量修改</el-button>
+    <el-button @click="batchDelete" type="danger" round size="mini">批量删除</el-button>
     <el-tree
       node-key="catId"
       show-checkbox
@@ -7,9 +17,10 @@
       :props="defaultProps"
       :expand-on-click-node="false"
       :default-expanded-keys="expandedIds"
-      draggable
+      :draggable="allowDraggable"
       :allow-drop="allowDrop"
       @node-drop="handleDrop"
+      ref="tree"
     >
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
@@ -61,6 +72,8 @@
 export default {
   data() {
     return {
+      Cid: [],
+      allowDraggable: false,
       updateNodes: [],
       maxLevel: 1,
       baseLevel: 0,
@@ -90,6 +103,60 @@ export default {
     this.getCategory()
   },
   methods: {
+    batchUpdate() {
+      this.$http({
+        url: this.$http.adornUrl('/product/category/update/sort'),
+        method: 'post',
+        data: this.$http.adornData(this.updateNodes, false)
+      }).then(() => {
+        this.getCategory()
+        this.expandedIds = this.Cid
+        this.$message({
+          type: 'success',
+          message: `移动成功!`
+        })
+      })
+      // console.log('updateNodes:', this.updateNodes)
+      this.updateNodes = []
+      this.Cid = []
+    },
+    batchDelete() {
+      let CheckedNodes = this.$refs.tree.getCheckedNodes()
+      console.log('CheckedNodes', CheckedNodes)
+      let ids = []
+      CheckedNodes.forEach(e => {
+        ids.push(e.catId)
+      })
+      this.$confirm(
+        `此操作将删除【${ids}】菜单, 是否继续?`,
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+        .then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/product/category/delete'),
+            method: 'post',
+            data: this.$http.adornData(ids, false)
+          }).then(({ data }) => {
+            this.getCategory()
+            this.expandedIds = ids
+          })
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
+    },
     handleDrop(draggingNode, dropNode, dropType, ev) {
       // 移动成功后交换数据
       console.log('handleDrop: ', draggingNode, dropNode, dropType)
@@ -106,6 +173,8 @@ export default {
         siblings = dropNode.childNodes
       }
 
+      this.Cid.push(Cid)
+
       // sort
       for (let i in siblings) {
         this.updateNodes.push({
@@ -118,21 +187,6 @@ export default {
           this.updateChildNodesLevel(siblings[i])
         }
       }
-
-      this.$http({
-        url: this.$http.adornUrl('/product/category/update/sort'),
-        method: 'post',
-        data: this.$http.adornData(this.updateNodes, false)
-      }).then(() => {
-        this.getCategory()
-        this.expandedIds = [Cid]
-        this.$message({
-          type: 'success',
-          message: `移动成功!`
-        })
-      })
-      // console.log('updateNodes:', this.updateNodes)
-      this.updateNodes = []
     },
     updateChildNodesLevel(node) {
       if (node.childNodes.length > 0) {
