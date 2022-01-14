@@ -34,7 +34,7 @@
           <img :src="scope.row.logo" style="height:100px;width:100px;" />
         </template>
       </el-table-column>
-      <el-table-column prop="descript" header-align="center" align="center" label="介绍"></el-table-column>
+      <el-table-column prop="description" header-align="center" align="center" label="介绍"></el-table-column>
       <el-table-column prop="showStatus" header-align="center" align="center" label="显示状态">
         <template slot-scope="scope">
           <el-switch

@@ -18,8 +18,8 @@
         <!-- <el-input v-model="dataForm.logo" placeholder="品牌logo地址"></el-input> -->
         <single-upload v-model="dataForm.logo"></single-upload>
       </el-form-item>
-      <el-form-item label="介绍" prop="descript">
-        <el-input v-model="dataForm.descript" placeholder="介绍"></el-input>
+      <el-form-item label="介绍" prop="description">
+        <el-input v-model="dataForm.description" placeholder="介绍"></el-input>
       </el-form-item>
       <el-form-item label="显示状态" prop="showStatus">
         <!-- <el-input v-model="dataForm.showStatus" placeholder="显示状态[0-不显示；1-显示]"></el-input> -->
@@ -51,7 +51,7 @@ export default {
         brandId: 0,
         name: '',
         logo: '',
-        descript: '',
+        description: '',
         showStatus: 1,
         firstLetter: '',
         sort: 0
@@ -61,7 +61,7 @@ export default {
         logo: [
           { required: true, message: '品牌logo地址不能为空', trigger: 'blur' }
         ],
-        descript: [
+        description: [
           { required: true, message: '介绍不能为空', trigger: 'blur' }
         ],
         showStatus: [
@@ -122,7 +122,7 @@ export default {
             if (data && data.code === 0) {
               this.dataForm.name = data.brand.name
               this.dataForm.logo = data.brand.logo
-              this.dataForm.descript = data.brand.descript
+              this.dataForm.description = data.brand.description
               this.dataForm.showStatus = data.brand.showStatus
               this.dataForm.firstLetter = data.brand.firstLetter
               this.dataForm.sort = data.brand.sort
@@ -144,7 +144,7 @@ export default {
               brandId: this.dataForm.brandId || undefined,
               name: this.dataForm.name,
               logo: this.dataForm.logo,
-              descript: this.dataForm.descript,
+              description: this.dataForm.description,
               showStatus: this.dataForm.showStatus,
               firstLetter: this.dataForm.firstLetter,
               sort: this.dataForm.sort
