@@ -85,6 +85,13 @@ export default {
   methods: {
     nodeClick(data, node, component) {
       console.log('farther-data', data, node, component)
+      if(node.isLeaf){
+        this.catelogId = data.catId
+        this.getDataList()
+      } else {
+        this.catelogId = 0
+        this.getDataList()
+      }
     },
     // 获取数据列表
     getDataList() {
