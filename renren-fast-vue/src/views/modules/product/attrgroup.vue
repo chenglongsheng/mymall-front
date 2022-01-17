@@ -1,7 +1,7 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="6">
-      <category></category>
+      <category @handle-node-click="nodeClick"></category>
     </el-col>
     <el-col :span="18">
       <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
@@ -82,6 +82,9 @@ export default {
     this.getDataList()
   },
   methods: {
+    nodeClick(data, node, component) {
+      // console.log('farther-data', data, node, component)
+    },
     // 获取数据列表
     getDataList() {
       this.dataListLoading = true

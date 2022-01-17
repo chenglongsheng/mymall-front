@@ -1,5 +1,5 @@
 <template>
-  <el-tree :data="menus" :props="defaultProps" ref="tree"></el-tree>
+  <el-tree :data="menus" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
 </template>
 
 <script>
@@ -17,6 +17,12 @@ export default {
     this.getCategory()
   },
   methods: {
+    handleNodeClick(data, node, component) {
+      // console.log('son-data', data, node, component)
+
+      // 将子组件事件的数据传递给父组件
+      this.$emit('handle-node-click', data, node, component)
+    },
     getCategory() {
       this.$http({
         url: this.$http.adornUrl('/product/category/list/tree'),
