@@ -66,6 +66,7 @@ export default {
   components: { Category, AddOrUpdate },
   data() {
     return {
+      catelogId: 0,
       dataForm: {
         key: ''
       },
@@ -83,13 +84,13 @@ export default {
   },
   methods: {
     nodeClick(data, node, component) {
-      // console.log('farther-data', data, node, component)
+      console.log('farther-data', data, node, component)
     },
     // 获取数据列表
     getDataList() {
       this.dataListLoading = true
       this.$http({
-        url: this.$http.adornUrl('/product/attrgroup/list'),
+        url: this.$http.adornUrl(`/product/attrgroup/list/${this.catelogId}`),
         method: 'get',
         params: this.$http.adornParams({
           page: this.pageIndex,
