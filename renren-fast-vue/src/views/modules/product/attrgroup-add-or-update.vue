@@ -129,6 +129,7 @@ export default {
           this.$http({
             url: this.$http.adornUrl(
               `/product/attrgroup/${
+                
                 !this.dataForm.attrGroupId ? 'save' : 'update'
               }`
             ),
