@@ -9,8 +9,8 @@
           <brand-select style="width:160px"></brand-select>
         </el-form-item>
         <el-form-item label="价格">
-          <el-input-number style="width:160px" v-model="dataForm.price.min" :min="0"></el-input-number>-
-          <el-input-number style="width:160px" v-model="dataForm.price.max" :min="0"></el-input-number>
+          <el-input-number style="width:160px" v-model="dataForm.min" :min="0"></el-input-number>-
+          <el-input-number style="width:160px" v-model="dataForm.max" :min="0"></el-input-number>
         </el-form-item>
         <el-form-item label="检索">
           <el-input style="width:160px" v-model="dataForm.key" clearable></el-input>
@@ -91,22 +91,14 @@
 </template>
 
 <script>
-import CategoryCascader from "../common/category-cascader";
-import BrandSelect from "../common/brand-select";
+import CategoryCascader from '../common/category-cascader'
+import BrandSelect from '../common/brand-select'
 export default {
   data() {
     return {
       catPathSub: null,
       brandIdSub: null,
-      dataForm: {
-        key: "",
-        brandId: 0,
-        catelogId: 0,
-        price: {
-          min: 0,
-          max: 0
-        }
-      },
+      dataForm: {},
       dataList: [],
       pageIndex: 1,
       pageSize: 10,
@@ -115,83 +107,80 @@ export default {
       dataListSelections: [],
       addOrUpdateVisible: false,
       catelogPath: []
-    };
+    }
   },
   components: {
     CategoryCascader,
     BrandSelect
   },
   activated() {
-    this.getDataList();
+    this.getDataList()
   },
   methods: {
     getSkuDetails(row, expand) {
       //sku详情查询
-      console.log("展开某行...", row, expand);
+      console.log('展开某行...', row, expand)
     },
     //处理更多指令
     handleCommand(row, command) {
-      console.log("~~~~~", row, command);
-      if ("stockSettings" == command) {
-        this.$router.push({ path: "/ware-sku", query: { skuId: row.skuId } });
+      console.log('~~~~~', row, command)
+      if ('stockSettings' == command) {
+        this.$router.push({ path: '/ware-sku', query: { skuId: row.skuId } })
       }
     },
     searchSkuInfo() {
-      this.getDataList();
+      this.getDataList()
     },
     // 获取数据列表
     getDataList() {
-      this.dataListLoading = true;
+      this.dataListLoading = true
+      let param = {}
+      Object.assign(param, this.dataForm, {
+        page: this.pageIndex,
+        limit: this.pageSize
+      })
       this.$http({
-        url: this.$http.adornUrl("/product/skuinfo/list"),
-        method: "get",
-        params: this.$http.adornParams({
-          page: this.pageIndex,
-          limit: this.pageSize,
-          key: this.dataForm.key,
-          catelogId: this.dataForm.catelogId,
-          brandId: this.dataForm.brandId,
-          min: this.dataForm.price.min,
-          max: this.dataForm.price.max
-        })
+        url: this.$http.adornUrl('/product/skuinfo/list'),
+        method: 'get',
+        params: this.$http.adornParams(param)
       }).then(({ data }) => {
         if (data && data.code === 0) {
-          this.dataList = data.page.list;
-          this.totalPage = data.page.totalCount;
+          this.dataList = data.page.list
+          this.totalPage = data.page.totalCount
         } else {
-          this.dataList = [];
-          this.totalPage = 0;
+          this.dataList = []
+          this.totalPage = 0
         }
-        this.dataListLoading = false;
-      });
+        this.dataListLoading = false
+      })
     },
     // 每页数
     sizeChangeHandle(val) {
-      this.pageSize = val;
-      this.pageIndex = 1;
-      this.getDataList();
+      this.pageSize = val
+      this.pageIndex = 1
+      this.getDataList()
     },
     // 当前页
     currentChangeHandle(val) {
-      this.pageIndex = val;
-      this.getDataList();
+      this.pageIndex = val
+      this.getDataList()
     },
     // 多选
     selectionChangeHandle(val) {
-      this.dataListSelections = val;
+      this.dataListSelections = val
     }
   },
   mounted() {
-    this.catPathSub = PubSub.subscribe("catPath", (msg, val) => {
-      this.dataForm.catelogId = val[val.length - 1];
-    });
-    this.brandIdSub = PubSub.subscribe("brandId", (msg, val) => {
-      this.dataForm.brandId = val;
-    });
+    this.catPathSub = PubSub.subscribe('catPath', (msg, val) => {
+      this.dataForm.catelogId = val[val.length - 1]
+    })
+    this.brandIdSub = PubSub.subscribe('brandId', (msg, val) => {
+      this.dataForm.brandId = val
+    })
   },
   beforeDestroy() {
-    PubSub.unsubscribe(this.catPathSub);
-    PubSub.unsubscribe(this.brandIdSub);
+    PubSub.unsubscribe(this.catPathSub)
+    PubSub.unsubscribe(this.brandIdSub)
   } //生命周期 - 销毁之前
-};
+}
 </script>
